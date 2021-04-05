@@ -15,8 +15,11 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/venv" />
+      <excludeFolder url="file://$MODULE_DIR$/.idea/libraries" />
+      <excludeFolder url="file://$MODULE_DIR$/static/cropperjs/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/static_cdn/cropperjs/dist" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.8 (chat_django)" jdkType="Python SDK" />
+    <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Django Lib" level="project" />
   </component>
