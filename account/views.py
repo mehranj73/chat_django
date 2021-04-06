@@ -12,15 +12,14 @@ import base64
 import requests
 from django.core import files
 
-
 from account.forms import RegistrationForm, AccountAuthenticationForm, AccountUpdateForm
 from account.models import Account
 from friend.utils import get_friend_request_or_false
 from friend.friend_request_status import FriendRequestStatus
 from friend.models import FriendList, FriendRequest
 
-
 TEMP_PROFILE_IMAGE_NAME = "temp_profile_image.png"
+
 
 # This is basically almost exactly the same as friends/friend_list_view
 def account_search_view(request, *args, **kwargs):
@@ -28,20 +27,20 @@ def account_search_view(request, *args, **kwargs):
     if request.method == "GET":
         search_query = request.GET.get("q")
         if len(search_query) > 0:
-            search_results = Account.objects.filter(email__icontains=search_query).filter(username__icontains=search_query).distinct()
+            search_results = Account.objects.filter(email__icontains=search_query).filter(
+                username__icontains=search_query).distinct()
             user = request.user
-            accounts = [] # [(account1, True), (account2, False), ...]
+            accounts = []  # [(account1, True), (account2, False), ...]
             for account in search_results:
-                accounts.append((account, False)) # you have no friends yet
+                accounts.append((account, False))  # you have no friends yet
             context['accounts'] = accounts
-                
-    return render(request, "account/search_results.html", context)
 
+    return render(request, "account/search_results.html", context)
 
 
 def register_view(request, *args, **kwargs):
     user = request.user
-    if user.is_authenticated: 
+    if user.is_authenticated:
         return HttpResponse("You are already authenticated as " + str(user.email))
 
     context = {}
@@ -75,7 +74,7 @@ def login_view(request, *args, **kwargs):
     context = {}
 
     user = request.user
-    if user.is_authenticated: 
+    if user.is_authenticated:
         return redirect("home")
 
     destination = get_redirect_if_exists(request)
@@ -110,8 +109,6 @@ def get_redirect_if_exists(request):
     return redirect
 
 
-
-
 def account_view(request, *args, **kwargs):
     """
     - Logic here is kind of tricky
@@ -141,11 +138,11 @@ def account_view(request, *args, **kwargs):
             friend_list.save()
         friends = friend_list.friends.all()
         context['friends'] = friends
-    
+
         # Define template variables
         is_self = True
         is_friend = False
-        request_sent = FriendRequestStatus.NO_REQUEST_SENT.value # range: ENUM -> friend/friend_request_status.FriendRequestStatus
+        request_sent = FriendRequestStatus.NO_REQUEST_SENT.value  # range: ENUM -> friend/friend_request_status.FriendRequestStatus
         friend_requests = None
         user = request.user
         if user.is_authenticated and user != account:
@@ -164,7 +161,7 @@ def account_view(request, *args, **kwargs):
                 # CASE3: No request sent from YOU or THEM: FriendRequestStatus.NO_REQUEST_SENT
                 else:
                     request_sent = FriendRequestStatus.NO_REQUEST_SENT.value
-        
+
         elif not user.is_authenticated:
             is_self = False
         else:
@@ -172,7 +169,7 @@ def account_view(request, *args, **kwargs):
                 friend_requests = FriendRequest.objects.filter(receiver=user, is_active=True)
             except:
                 pass
-            
+
         # Set the template variables to the values
         context['is_self'] = is_self
         context['is_friend'] = is_friend
@@ -182,7 +179,6 @@ def account_view(request, *args, **kwargs):
         return render(request, "account/account.html", context)
 
 
-
 def save_temp_profile_image_from_base64String(imageString, user):
     INCORRECT_PADDING_EXCEPTION = "Incorrect padding"
     try:
@@ -190,7 +186,7 @@ def save_temp_profile_image_from_base64String(imageString, user):
             os.mkdir(settings.TEMP)
         if not os.path.exists(settings.TEMP + "/" + str(user.pk)):
             os.mkdir(settings.TEMP + "/" + str(user.pk))
-        url = os.path.join(settings.TEMP + "/" + str(user.pk),TEMP_PROFILE_IMAGE_NAME)
+        url = os.path.join(settings.TEMP + "/" + str(user.pk), TEMP_PROFILE_IMAGE_NAME)
         storage = FileSystemStorage(location=url)
         image = base64.b64decode(imageString)
         with storage.open('', 'wb+') as destination:
@@ -221,9 +217,9 @@ def crop_image(request, *args, **kwargs):
             cropHeight = int(float(str(request.POST.get("cropHeight"))))
             if cropX < 0:
                 cropX = 0
-            if cropY < 0: # There is a bug with cropperjs. y can be negative.
+            if cropY < 0:  # There is a bug with cropperjs. y can be negative.
                 cropY = 0
-            crop_img = img[cropY:cropY+cropHeight, cropX:cropX+cropWidth]
+            crop_img = img[cropY:cropY + cropHeight, cropX:cropX + cropWidth]
 
             cv2.imwrite(url, crop_img)
 
@@ -239,7 +235,7 @@ def crop_image(request, *args, **kwargs):
 
             # delete temp file
             os.remove(url)
-            
+
         except Exception as e:
             print("exception: " + str(e))
             payload['result'] = "error"
@@ -262,25 +258,25 @@ def edit_account_view(request, *args, **kwargs):
             return redirect("account:view", user_id=account.pk)
         else:
             form = AccountUpdateForm(request.POST, instance=request.user,
-                initial={
-                    "id": account.pk,
-                    "email": account.email, 
-                    "username": account.username,
-                    "profile_image": account.profile_image,
-                    "hide_email": account.hide_email,
-                }
-            )
+                                     initial={
+                                         "id": account.pk,
+                                         "email": account.email,
+                                         "username": account.username,
+                                         "profile_image": account.profile_image,
+                                         "hide_email": account.hide_email,
+                                     }
+                                     )
             context['form'] = form
     else:
         form = AccountUpdateForm(
             initial={
-                    "id": account.pk,
-                    "email": account.email, 
-                    "username": account.username,
-                    "profile_image": account.profile_image,
-                    "hide_email": account.hide_email,
-                }
-            )
+                "id": account.pk,
+                "email": account.email,
+                "username": account.username,
+                "profile_image": account.profile_image,
+                "hide_email": account.hide_email,
+            }
+        )
         context['form'] = form
     context['DATA_UPLOAD_MAX_MEMORY_SIZE'] = settings.DATA_UPLOAD_MAX_MEMORY_SIZE
     return render(request, "account/edit_account.html", context)
