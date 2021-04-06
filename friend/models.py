@@ -4,7 +4,6 @@ from django.utils import timezone
 
 
 class FriendList(models.Model):
-
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="user")
     friends = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name="friends")
 
@@ -30,7 +29,7 @@ class FriendList(models.Model):
         """
         Initiate the action of unfriending someone.
         """
-        remover_friends_list = self # person terminating the friendship
+        remover_friends_list = self  # person terminating the friendship
 
         # Remove friend from remover friend list
         remover_friends_list.remove_friend(removee)
@@ -38,7 +37,6 @@ class FriendList(models.Model):
         # Remove friend from removee friend list
         friends_list = FriendList.objects.get(user=removee)
         friends_list.remove_friend(remover_friends_list.user)
-
 
     def is_mutual_friend(self, friend):
         """
@@ -90,7 +88,6 @@ class FriendRequest(models.Model):
         self.is_active = False
         self.save()
 
-
     def cancel(self):
         """
         Cancel a friend request.
@@ -99,4 +96,3 @@ class FriendRequest(models.Model):
         """
         self.is_active = False
         self.save()
-
