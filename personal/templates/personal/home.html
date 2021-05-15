@@ -60,6 +60,10 @@
         .timestamp-span:hover {
             cursor: pointer;
         }
+
+        #id_chatroom_loading_spinner {
+            position: absolute;
+        }
     </style>
 
     {% if debug %}
@@ -69,6 +73,12 @@
 
     <div class="container">
         <div class="d-flex flex-column">
+            <div class="d-flex flex-row justify-content-center" id="id_chatroom_loading_spinner_container">
+                <div class="spinner-border text-primary" id="id_chatroom_loading_spinner" role="status"
+                     style="display: none; ">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
             <div class="d-flex chat-log" id="id_chat_log">
 
             </div>
@@ -98,6 +108,9 @@
             console.log("Got chat websocket message " + message.data);
             var data = JSON.parse(message.data);
 
+            // display the progress bar?
+            displayChatroomLoadingSpinner(data.display_progress_bar)
+
             // Handle errors (ClientError)
             if (data.error) {
                 console.error(data.error + ": " + data.message)
@@ -112,7 +125,7 @@
 
             // Handle getting a message
             if (data.msg_type == 0) {
-                appendChatMessage(data)
+                appendChatMessage(data, true, true)
             }
             // new payload of messages coming in from backend
             if (data.messages_payload) {
@@ -170,7 +183,7 @@
             messageInputDom.value = '';
         };
 
-        function appendChatMessage(data) {
+        function appendChatMessage(data, maintainPosition, isNewMessage) {
             message = data['message']
             uName = data['username']
             user_id = data['user_id']
@@ -179,14 +192,14 @@
 
             var msg = message + '\n';
             var username = uName + ": "
-            createChatMessageElement(msg, username, profile_image, user_id, timestamp)
+            createChatMessageElement(msg, username, profile_image, user_id, timestamp, maintainPosition, isNewMessage)
         }
 
         function handleMessagesPayload(messages, new_page_number) {
             if (messages != null && messages != "undefined" && messages != "None") {
                 setPageNumber(new_page_number)
                 messages.forEach(function (message) {
-                    appendChatMessage(message)
+                    appendChatMessage(message, true, false)
                 })
             } else {
                 setPaginationExhausted() // no more messages
@@ -228,7 +241,7 @@
             });
         })
 
-        function createChatMessageElement(msg, username, profile_image, user_id, timestamp) {
+        function createChatMessageElement(msg, username, profile_image, user_id, timestamp, maintainPosition, isNewMessage) {
             var chatLog = document.getElementById("id_chat_log")
 
             var newMessageDiv = document.createElement("div")
@@ -281,7 +294,15 @@
 
             newMessageDiv.appendChild(div1)
 
-            chatLog.insertBefore(newMessageDiv, chatLog.firstChild)
+            if (isNewMessage) {
+                chatLog.insertBefore(newMessageDiv, chatLog.firstChild)
+            } else {
+                chatLog.appendChild(newMessageDiv)
+            }
+
+            if (!maintainPosition) {
+                chatLog.scrollTop = chatLog.scrollHeight
+            }
         }
 
         function selectUser(user_id) {
@@ -294,6 +315,15 @@
         function showClientErrorModal(message) {
             document.getElementById("id_client_error_modal_body").innerHTML = message
             document.getElementById("id_trigger_client_error_modal").click()
+        }
+
+        function displayChatroomLoadingSpinner(isDisplayed) {
+            var spinner = document.getElementById("id_chatroom_loading_spinner")
+            if (isDisplayed) {
+                spinner.style.display = "block"
+            } else {
+                spinner.style.display = "none"
+            }
         }
     </script>
 
