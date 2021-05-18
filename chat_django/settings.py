@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'account',
     'friend',
     'public_chat',
+    'chat',
 
     # Installed apps
     'channels',
