@@ -139,8 +139,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         if self.room_id != None:
             if str(room_id) != str(self.room_id):
                 raise ClientError("ROOM_ACCESS_DENIED", "Room access denied")
-            else:
-                raise ClientError("ROOM_ACCESS_DENIED", "Room access denied")
+        else:
+            raise ClientError("ROOM_ACCESS_DENIED", "Room access denied")
 
         # Get the room and send to the group about it
         room = await get_room_or_error(room_id, self.scope["user"])
