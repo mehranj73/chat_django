@@ -6,6 +6,7 @@ from django.core.paginator import Paginator
 
 import json
 
+
 from chat.models import RoomChatMessage, PrivateChatRoom
 from friend.models import FriendList
 from account.utils import LazyAccountEncoder
@@ -58,6 +59,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                     raise ClientError(204, "Something went wrong retrieving the chatroom messages.")
                 await self.display_progress_bar(False)
             elif command == "get_user_info":
+                await self.display_progress_bar(True)
                 room = await get_room_or_error(content['room_id'], self.scope["user"])
                 payload = get_user_info(room, self.scope["user"])
                 if payload != None:
@@ -65,6 +67,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                     await self.send_user_info_payload(payload['user_info'])
                 else:
                     raise ClientError(204, "Something went wrong retrieving the other users account details.")
+                await self.display_progress_bar(False)
         except ClientError as e:
             await self.handle_client_error(e)
 
@@ -273,6 +276,11 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         - Hide the progress bar on UI
         """
         print("DISPLAY PROGRESS BAR: " + str(is_displayed))
+        await self.send_json(
+            {
+                "display_progress_bar": is_displayed
+            }
+        )
 
     async def handle_client_error(self, e):
         """
@@ -355,4 +363,4 @@ def get_room_chat_messages(room, page_number):
         return json.dumps(payload)
     except Exception as e:
         print("EXCEPTION: " + str(e))
-        return None
+    return None
