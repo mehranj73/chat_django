@@ -74,4 +74,3 @@ def create_or_return_private_chat(request, *args, **kwargs):
     else:
         payload['response'] = "You can't start a chat if you are not authenticated."
     return HttpResponse(json.dumps(payload), content_type="application/json")
-
